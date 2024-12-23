@@ -1,0 +1,406 @@
+openapi: 3.0.3
+info:
+  title: Credit Service
+  description: API to manage personal and business credits.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Local server
+
+paths:
+  /api/v1/credit:
+    get:
+      summary: Get all credits
+      operationId: getAllCredits
+      responses:
+        '200':
+          description: List of credits
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CreditResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    post:
+      summary: Create a new credit
+      operationId: createCredit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreditRequest'
+      responses:
+        '201':
+          description: Credit created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /v1/credit/{id}:
+    get:
+      summary: Get a credit by ID
+      operationId: getCreditById
+      parameters:
+        - name: id
+          in: path
+          description: id of credit
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Credit found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditResponse'
+        '404':
+          description: Credit not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      summary: Update a credit by ID
+      operationId: updateCredit
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: id of credit
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreditRequest'
+      responses:
+        '200':
+          description: Credit updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreditResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Credit not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      summary: Delete a credit by ID
+      operationId: deleteCredit
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: id of credit
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Credit deleted
+        '404':
+          description: Credit not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /v1/credit/{id}/payment:
+    post:
+      summary: Make a credit payment
+      operationId: makePayment
+      parameters:
+        - name: id
+          in: path
+          description: id of credit
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PaymentRequest'
+      responses:
+        '200':
+          description: Payment made
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentResponse'
+        '404':
+          description: Credit not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /v1/credit/{clientId}/balances:
+    get:
+      summary: Get client balances
+      operationId: getClientBalances
+      parameters:
+        - name: clientId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Client balances
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalanceResponse'
+        '404':
+          description: Client not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /v1/credit/{clientId}/transactions:
+    get:
+      summary: Get client transactions
+      operationId: getClientTransactions
+      parameters:
+        - name: clientId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Client transactions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+        '404':
+          description: Client not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    Credit:
+      type: object
+      properties:
+        _id:
+          type: string
+        type:
+          type: string
+          enum: [personal, business]
+        amount:
+          type: number
+        interestRate:
+          type: number
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        outstandingBalance:
+          type: number
+        clientId:
+          type: string
+        payments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Payment'
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transaction'
+        balances:
+          type: object
+          properties:
+            clientId:
+              type: string
+            creditBalance:
+              type: number
+            date:
+              type: string
+              format: date
+    CreditRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [personal, business]
+        amount:
+          type: number
+        interestRate:
+          type: number
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        clientId:
+          type: string
+      required:
+        - type
+        - amount
+        - interestRate
+        - startDate
+        - endDate
+        - clientId
+    CreditResponse:
+      type: object
+      properties:
+        _id:
+          type: string
+        type:
+          type: string
+          enum: [personal, business]
+        amount:
+          type: number
+        interestRate:
+          type: number
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        outstandingBalance:
+          type: number
+        clientId:
+          type: string
+        payments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Payment'
+    Payment:
+      type: object
+      properties:
+        amount:
+          type: number
+        date:
+          type: string
+          format: date
+        description:
+          type: string
+    PaymentRequest:
+      type: object
+      properties:
+        clientId:
+          type: string
+        amount:
+          type: number
+      required:
+        - amount
+        - clientId
+    PaymentResponse:
+      type: object
+      properties:
+        amount:
+          type: number
+        date:
+          type: string
+          format: date
+    Transaction:
+      type: object
+      properties:
+        clientId:
+          type: string
+        type:
+          type: string
+          enum: [purchase, payment]
+        amount:
+          type: number
+        date:
+          type: string
+          format: date
+        description:
+          type: string
+    BalanceResponse:
+      type: object
+      properties:
+        clientId:
+          type: string
+        savingsAccountBalance:
+          type: number
+    TransactionResponse:
+      type: object
+      properties:
+        clientId:
+          type: string
+        transactions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Transaction'
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
