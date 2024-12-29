@@ -2,7 +2,6 @@ package com.nttdata.credit.model.response;
 
 import com.nttdata.credit.model.entity.Balance;
 import com.nttdata.credit.model.entity.Payment;
-import com.nttdata.credit.model.entity.Transaction;
 import com.nttdata.credit.model.enums.TypeCredit;
 import lombok.*;
 
@@ -23,6 +22,4 @@ public class CreditResponse {
     private double outstandingBalance;
     private String clientId;
     private List<Payment> payments;
-    private List<Transaction> transactions;
-    private Balance balances;
 }

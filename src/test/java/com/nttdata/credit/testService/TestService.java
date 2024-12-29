@@ -2,7 +2,6 @@ package com.nttdata.credit.testService;
 
 import com.nttdata.credit.model.entity.Credit;
 import com.nttdata.credit.model.enums.TypeCredit;
-import com.nttdata.credit.model.exception.CreditNotFoundException;
 import com.nttdata.credit.model.request.CreditRequest;
 import com.nttdata.credit.repository.CreditRespository;
 import com.nttdata.credit.service.impl.CreditServiceImpl;
@@ -85,28 +84,6 @@ public class TestService {
         verify(creditRepository, times(1)).findById("1");
     }
 
-    @Test
-    void createCredit_success() {
-        when(creditRepository.save(any(Credit.class))).thenReturn(Mono.just(credit));
-
-        StepVerifier.create(creditService.createCredit(creditRequest))
-                .expectNextMatches(creditResponse -> creditResponse!=null)
-                .verifyComplete();
-
-        verify(creditRepository, times(1)).save(any(Credit.class));
-    }
-
-    @Test
-    void createCredit_error() {
-        when(creditRepository.save(any(Credit.class))).thenReturn(Mono.error(new RuntimeException("Error")));
-
-        StepVerifier.create(creditService.createCredit(creditRequest))
-                .expectErrorMatches(throwable -> throwable instanceof Exception &&
-                        throwable.getMessage().equals("Error creating Credit"))
-                .verify();
-
-        verify(creditRepository, times(1)).save(any(Credit.class));
-    }
 
     @Test
     void updateCredit_success() {

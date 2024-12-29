@@ -32,4 +32,11 @@ public class CreditExceptionHandler {
         errorResponse.setMessage(ex.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+    @ExceptionHandler(PaymentDataException.class)
+    public ResponseEntity<ErrorResponse> handlePaymentDataException(Exception ex) {
+        ErrorResponse errorResponse = new ErrorResponse();
+        errorResponse.setError("Invalid Payment Data");
+        errorResponse.setMessage(ex.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
 }

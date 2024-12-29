@@ -187,54 +187,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /v1/credit/{clientId}/balances:
+  /v1/credit/{id}/payments:
     get:
-      summary: Get client balances
-      operationId: getClientBalances
-      parameters:
-        - name: clientId
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Client balances
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BalanceResponse'
-        '404':
-          description: Client not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Internal server error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-  /v1/credit/{clientId}/transactions:
-    get:
-      summary: Get client transactions
+      summary: Get List of client payments
       operationId: getClientTransactions
       parameters:
-        - name: clientId
+        - name: id
           in: path
           required: true
           schema:
             type: string
       responses:
         '200':
-          description: Client transactions
+          description: credi payments
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TransactionResponse'
+                type: array
+                items:
+                  $ref: '#/components/schemas/PaymentResponse'
         '404':
-          description: Client not found
+          description: credi not found
           content:
             application/json:
               schema:
@@ -273,20 +246,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Payment'
-        transactions:
-          type: array
-          items:
-            $ref: '#/components/schemas/Transaction'
-        balances:
-          type: object
-          properties:
-            clientId:
-              type: string
-            creditBalance:
-              type: number
-            date:
-              type: string
-              format: date
     CreditRequest:
       type: object
       properties:
@@ -351,8 +310,6 @@ components:
     PaymentRequest:
       type: object
       properties:
-        clientId:
-          type: string
         amount:
           type: number
       required:
@@ -366,37 +323,7 @@ components:
         date:
           type: string
           format: date
-    Transaction:
-      type: object
-      properties:
-        clientId:
-          type: string
-        type:
-          type: string
-          enum: [purchase, payment]
-        amount:
-          type: number
-        date:
-          type: string
-          format: date
-        description:
-          type: string
-    BalanceResponse:
-      type: object
-      properties:
-        clientId:
-          type: string
-        savingsAccountBalance:
-          type: number
-    TransactionResponse:
-      type: object
-      properties:
-        clientId:
-          type: string
-        transactions:
-          type: array
-          items:
-            $ref: '#/components/schemas/Transaction'
+
     ErrorResponse:
       type: object
       properties:

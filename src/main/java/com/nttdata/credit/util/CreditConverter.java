@@ -16,8 +16,6 @@ public class CreditConverter {
         credit.setOutstandingBalance(request.getOutstandingBalance());
         credit.setClientId(request.getClientId());
         credit.setPayments(request.getPayments());
-        credit.setBalances(request.getBalances());
-        credit.setTransactions(request.getTransactions());
 
         return credit;
     }

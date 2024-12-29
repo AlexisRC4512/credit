@@ -3,7 +3,6 @@ package com.nttdata.credit.model.request;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.nttdata.credit.model.entity.Balance;
 import com.nttdata.credit.model.entity.Payment;
-import com.nttdata.credit.model.entity.Transaction;
 import com.nttdata.credit.model.enums.TypeCredit;
 import com.nttdata.credit.util.CreditTypeDeserializer;
 import lombok.Getter;
@@ -24,11 +23,9 @@ public class CreditRequest {
     private double outstandingBalance;
     private String clientId;
     private List<Payment> payments;
-    private List<Transaction> transactions;
-    private Balance balances;
 
     public CreditRequest(TypeCredit type, double amount, double interestRate, Date startDate, Date endDate, double outstandingBalance, String clientId
-    ,List<Payment> payments,List<Transaction> transactions,Balance balances) {
+    ,List<Payment> payments) {
         setType(type);
         setAmount(amount);
         setInterestRate(interestRate);
@@ -37,8 +34,6 @@ public class CreditRequest {
         setOutstandingBalance(outstandingBalance);
         setClientId(clientId);
         setPayments(payments);
-        setTransactions(transactions);
-        setBalances(balances);
     }
 
     public void setType(TypeCredit type) {
@@ -80,7 +75,7 @@ public class CreditRequest {
         if (outstandingBalance < 0) {
             throw new IllegalArgumentException("Outstanding balance must be non-negative");
         }
-        this.outstandingBalance = outstandingBalance;
+        this.outstandingBalance = Math.round(outstandingBalance);
     }
 
     public void setClientId(String clientId) {
@@ -93,11 +88,4 @@ public class CreditRequest {
         this.payments = payments;
     }
 
-    public void setTransactions(List<Transaction> transactions) {
-        this.transactions = transactions;
-    }
-
-    public void setBalances(Balance balances) {
-        this.balances = balances;
-    }
 }
