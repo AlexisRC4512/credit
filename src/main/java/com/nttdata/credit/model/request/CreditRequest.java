@@ -1,7 +1,6 @@
 package com.nttdata.credit.model.request;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.nttdata.credit.model.entity.Balance;
 import com.nttdata.credit.model.entity.Payment;
 import com.nttdata.credit.model.enums.TypeCredit;
 import com.nttdata.credit.util.CreditTypeDeserializer;

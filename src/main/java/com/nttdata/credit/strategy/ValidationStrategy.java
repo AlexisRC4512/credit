@@ -3,15 +3,12 @@ package com.nttdata.credit.strategy;
 
 import com.nttdata.credit.model.entity.Credit;
 import com.nttdata.credit.model.enums.TypeClient;
-import com.nttdata.credit.model.enums.TypeCredit;
 import com.nttdata.credit.model.exception.CreditNotFoundException;
 import com.nttdata.credit.model.response.CreditResponse;
 import com.nttdata.credit.repository.CreditRespository;
 import com.nttdata.credit.util.CreditConverter;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 

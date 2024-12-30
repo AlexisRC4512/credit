@@ -11,7 +11,7 @@ public class PaymentRequest {
     double amount;
 
     public void setAmount(double amount) {
-        if (amount<0){
+        if (amount < 0 ) {
             throw new IllegalArgumentException("The amount it has to be may");
         }
         this.amount = amount;
