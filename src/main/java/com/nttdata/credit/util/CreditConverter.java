@@ -1,7 +1,6 @@
 package com.nttdata.credit.util;
 
 import com.nttdata.credit.model.entity.Credit;
-import com.nttdata.credit.model.enums.TypeCredit;
 import com.nttdata.credit.model.request.CreditRequest;
 import com.nttdata.credit.model.response.CreditResponse;
 
@@ -16,8 +15,6 @@ public class CreditConverter {
         credit.setOutstandingBalance(request.getOutstandingBalance());
         credit.setClientId(request.getClientId());
         credit.setPayments(request.getPayments());
-        credit.setBalances(request.getBalances());
-        credit.setTransactions(request.getTransactions());
 
         return credit;
     }

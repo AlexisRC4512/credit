@@ -1,11 +1,11 @@
 package com.nttdata.credit.controller;
 
 import com.nttdata.credit.model.request.CreditRequest;
+import com.nttdata.credit.model.request.PaymentRequest;
 import com.nttdata.credit.model.response.CreditResponse;
+import com.nttdata.credit.model.response.PaymentResponse;
 import com.nttdata.credit.service.CreditService;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -40,5 +40,15 @@ public class CreditController {
     @DeleteMapping("/{id}")
     public Mono<Void> deleteCredit(@PathVariable String id) {
         return creditService.deleteCredit(id);
+    }
+
+
+    @PostMapping("/{id}/payment")
+    public Mono<PaymentResponse> createPayment(@PathVariable String id,@RequestBody PaymentRequest paymentRequest) {
+        return creditService.payByCreditId(id,paymentRequest);
+    }
+    @GetMapping("/{id}/payments")
+    public Flux<PaymentResponse> getAllPaymentByCreditId(@PathVariable String id) {
+        return creditService.getAllPaysByCredirId(id);
     }
 }

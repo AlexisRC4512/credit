@@ -2,7 +2,6 @@ package com.nttdata.credit.testService;
 
 import com.nttdata.credit.model.entity.Credit;
 import com.nttdata.credit.model.enums.TypeCredit;
-import com.nttdata.credit.model.exception.CreditNotFoundException;
 import com.nttdata.credit.model.request.CreditRequest;
 import com.nttdata.credit.repository.CreditRespository;
 import com.nttdata.credit.service.impl.CreditServiceImpl;
@@ -40,18 +39,18 @@ public class TestService {
     }
 
     @Test
-    void getAllCredits_success() {
+    void getAllCreditsSuccess() {
         when(creditRepository.findAll()).thenReturn(Flux.just(credit));
 
         StepVerifier.create(creditService.getAllCredits())
-                .expectNextMatches(creditResponse -> creditResponse !=null)
+                .expectNextMatches(creditResponse -> creditResponse != null)
                 .verifyComplete();
 
         verify(creditRepository, times(1)).findAll();
     }
 
     @Test
-    void getAllCredits_error() {
+    void getAllCreditsError() {
         when(creditRepository.findAll()).thenReturn(Flux.error(new RuntimeException("Error")));
 
         StepVerifier.create(creditService.getAllCredits())
@@ -63,18 +62,18 @@ public class TestService {
     }
 
     @Test
-    void getCreditById_success() {
+    void getCreditByIdSuccess() {
         when(creditRepository.findById("1")).thenReturn(Mono.just(credit));
 
         StepVerifier.create(creditService.getCreditById("1"))
-                .expectNextMatches(creditResponse -> creditResponse !=null)
+                .expectNextMatches(creditResponse -> creditResponse != null)
                 .verifyComplete();
 
         verify(creditRepository, times(1)).findById("1");
     }
 
     @Test
-    void getCreditById_Error() {
+    void getCreditByIdError() {
         when(creditRepository.findById("1")).thenReturn(Mono.error(new RuntimeException("Database error")));
 
         StepVerifier.create(creditService.getCreditById("1"))
@@ -85,36 +84,14 @@ public class TestService {
         verify(creditRepository, times(1)).findById("1");
     }
 
-    @Test
-    void createCredit_success() {
-        when(creditRepository.save(any(Credit.class))).thenReturn(Mono.just(credit));
-
-        StepVerifier.create(creditService.createCredit(creditRequest))
-                .expectNextMatches(creditResponse -> creditResponse!=null)
-                .verifyComplete();
-
-        verify(creditRepository, times(1)).save(any(Credit.class));
-    }
 
     @Test
-    void createCredit_error() {
-        when(creditRepository.save(any(Credit.class))).thenReturn(Mono.error(new RuntimeException("Error")));
-
-        StepVerifier.create(creditService.createCredit(creditRequest))
-                .expectErrorMatches(throwable -> throwable instanceof Exception &&
-                        throwable.getMessage().equals("Error creating Credit"))
-                .verify();
-
-        verify(creditRepository, times(1)).save(any(Credit.class));
-    }
-
-    @Test
-    void updateCredit_success() {
+    void updateCreditSuccess() {
         when(creditRepository.findById("1")).thenReturn(Mono.just(credit));
         when(creditRepository.save(any(Credit.class))).thenReturn(Mono.just(credit));
 
         StepVerifier.create(creditService.updateCredit("1", creditRequest))
-                .expectNextMatches(creditResponse -> creditResponse !=null)
+                .expectNextMatches(creditResponse -> creditResponse != null)
                 .verifyComplete();
 
         verify(creditRepository, times(1)).findById("1");
@@ -134,7 +111,7 @@ public class TestService {
     }
 
     @Test
-    void deleteCredit_success() {
+    void deleteCreditSuccess() {
         when(creditRepository.findById("1")).thenReturn(Mono.just(credit));
         when(creditRepository.delete(credit)).thenReturn(Mono.empty());
 

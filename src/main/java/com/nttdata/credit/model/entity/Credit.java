@@ -66,13 +66,4 @@ public class Credit {
      */
     private List<Payment> payments;
 
-    /**
-     * List of transactions associated with the credit.
-     */
-    private List<Transaction> transactions;
-
-    /**
-     * Balance details of the credit.
-     */
-    private Balance balances;
 }
