@@ -1,8 +1,13 @@
 package com.nttdata.credit.testService;
 
+import com.nttdata.credit.model.entity.Balance;
 import com.nttdata.credit.model.entity.Credit;
+import com.nttdata.credit.model.entity.Payment;
 import com.nttdata.credit.model.enums.TypeCredit;
 import com.nttdata.credit.model.request.CreditRequest;
+import com.nttdata.credit.model.response.BalanceResponse;
+import com.nttdata.credit.model.response.CreditResponse;
+import com.nttdata.credit.model.response.PaymentResponse;
 import com.nttdata.credit.repository.CreditRespository;
 import com.nttdata.credit.service.impl.CreditServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,16 +20,18 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class TestService {
     @Mock
     private CreditRespository creditRepository;
-
     @InjectMocks
     private CreditServiceImpl creditService;
-
     private Credit credit;
     private CreditRequest creditRequest;
 
@@ -132,5 +139,88 @@ public class TestService {
                 .verify();
 
         verify(creditRepository, times(1)).findById("1");
+    }
+    @Test
+    public void testGetBalanceByClientIdSuccess() {
+        String idClient = "clientId";
+
+        Credit credit = new Credit();
+        credit.setClientId(idClient);
+        credit.setOutstandingBalance(100);
+
+        BalanceResponse balanceResponse = new BalanceResponse();
+        balanceResponse.setClientId(idClient);
+        balanceResponse.setBalances(Collections.singletonList(new Balance(idClient, 100, new Date())));
+
+        when(creditRepository.findByClientId(idClient)).thenReturn(Flux.just(credit));
+
+        Flux<BalanceResponse> result = creditService.getBalanceByClientId(idClient);
+
+        StepVerifier.create(result)
+                .expectNextMatches(response -> response != null && response.getClientId().equals(idClient))
+                .verifyComplete();
+    }
+
+    @Test
+    public void testGetBalanceByClientIdCreditNotFound() {
+        String idClient = "clientId";
+
+        when(creditRepository.findByClientId(idClient)).thenReturn(Flux.empty());
+
+        Flux<BalanceResponse> result = creditService.getBalanceByClientId(idClient);
+
+        StepVerifier.create(result)
+                .expectError(Exception.class)
+                .verify();
+    }
+    @Test
+    public void testGetCreditByClientIdSuccess() {
+        String idClient = "clientId";
+
+        Credit credit = new Credit();
+        credit.setClientId(idClient);
+
+        CreditResponse creditResponse = new CreditResponse();
+        creditResponse.setClientId(idClient);
+
+        when(creditRepository.findByClientId(idClient)).thenReturn(Flux.just(credit));
+
+        Flux<CreditResponse> result = creditService.getCreditByClientId(idClient);
+
+        StepVerifier.create(result)
+                .expectNextMatches(response -> response != null && response.getClientId().equals(idClient))
+                .verifyComplete();
+    }
+
+    @Test
+    public void testGetCreditByClientIdCreditNotFound() {
+        String idClient = "clientId";
+
+        when(creditRepository.findByClientId(idClient)).thenReturn(Flux.empty());
+
+        Flux<CreditResponse> result = creditService.getCreditByClientId(idClient);
+
+        StepVerifier.create(result)
+                .expectError(Exception.class)
+                .verify();
+    }
+    @Test
+    void testGetAllPaysByCredirIdSuccess() {
+        String creditId = "123";
+        Payment payment1 = new Payment(100, new Date(), "Payment 1");
+        Payment payment2 = new Payment(200, new Date(), "Payment 2");
+        Credit credit = new Credit();
+        credit.setPayments(Arrays.asList(payment1, payment2));
+
+        when(creditRepository.findById(creditId)).thenReturn(Mono.just(credit));
+
+        Flux<PaymentResponse> result = creditService.getAllPaysByCredirId(creditId);
+
+        StepVerifier.create(result)
+                .expectNextMatches(response -> response.getAmount() == 100)
+                .expectNextMatches(response -> response.getAmount() == 200)
+                .verifyComplete();
+
+        verify(creditRepository).findById(creditId);
     }
 }

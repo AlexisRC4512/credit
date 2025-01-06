@@ -4,9 +4,12 @@ import com.nttdata.credit.model.entity.Credit;
 import com.nttdata.credit.model.request.CreditRequest;
 import com.nttdata.credit.model.response.CreditResponse;
 
+import java.util.UUID;
+
 public class CreditConverter {
     public static Credit toCredit(CreditRequest request) {
         Credit credit = new Credit();
+        credit.setId(UUID.randomUUID().toString());
         credit.setType(request.getType());
         credit.setAmount(request.getAmount());
         credit.setInterestRate(request.getInterestRate());
