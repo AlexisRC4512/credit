@@ -2,6 +2,7 @@ package com.nttdata.credit.controller;
 
 import com.nttdata.credit.model.request.CreditRequest;
 import com.nttdata.credit.model.request.PaymentRequest;
+import com.nttdata.credit.model.response.BalanceResponse;
 import com.nttdata.credit.model.response.CreditResponse;
 import com.nttdata.credit.model.response.PaymentResponse;
 import com.nttdata.credit.service.CreditService;
@@ -42,7 +43,10 @@ public class CreditController {
         return creditService.deleteCredit(id);
     }
 
-
+    @GetMapping("/{id_client}/balances")
+    public Flux<BalanceResponse> getBalanceAccount(@PathVariable("id_client") String idClient) {
+        return creditService.getBalanceByClientId(idClient);
+    }
     @PostMapping("/{id}/payment")
     public Mono<PaymentResponse> createPayment(@PathVariable String id,@RequestBody PaymentRequest paymentRequest) {
         return creditService.payByCreditId(id,paymentRequest);
@@ -50,5 +54,9 @@ public class CreditController {
     @GetMapping("/{id}/payments")
     public Flux<PaymentResponse> getAllPaymentByCreditId(@PathVariable String id) {
         return creditService.getAllPaysByCredirId(id);
+    }
+    @GetMapping("/client/{id}")
+    public Flux<CreditResponse> getCreditByClientId(@PathVariable String id) {
+        return creditService.getCreditByClientId(id);
     }
 }

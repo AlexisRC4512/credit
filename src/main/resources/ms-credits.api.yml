@@ -218,6 +218,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /v1/credit/client/{id}:
+    get:
+      summary: Get List of credits for client id
+      operationId: getClientCreditTransactions
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: credi payments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CreditResponse'
+        '404':
+          description: credi not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 components:
   schemas:
     Credit:
@@ -264,6 +295,12 @@ components:
           format: date
         clientId:
           type: string
+        outstandingBalance:
+          type: number
+        payments:
+          type: array
+          items:
+            $ref: '#/components/schemas/Payment'
       required:
         - type
         - amount

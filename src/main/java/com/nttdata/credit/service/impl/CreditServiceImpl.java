@@ -8,24 +8,25 @@ import com.nttdata.credit.model.exception.InvalidCreditDataException;
 import com.nttdata.credit.model.exception.PaymentDataException;
 import com.nttdata.credit.model.request.CreditRequest;
 import com.nttdata.credit.model.request.PaymentRequest;
+import com.nttdata.credit.model.response.BalanceResponse;
 import com.nttdata.credit.model.response.CreditResponse;
 import com.nttdata.credit.model.response.PaymentResponse;
 import com.nttdata.credit.repository.CreditRespository;
 import com.nttdata.credit.service.ClientService;
 import com.nttdata.credit.service.CreditService;
 import com.nttdata.credit.strategy.ValidationStrategy;
+import com.nttdata.credit.util.BalanceConverter;
 import com.nttdata.credit.util.CreditConverter;
 import com.nttdata.credit.util.PaymentConverter;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -47,6 +48,8 @@ public class CreditServiceImpl implements CreditService {
      * @return a flux of credit responses.
      */
     @Override
+    @CircuitBreaker(name = "credit", fallbackMethod = "fallbackGetAllCredits")
+    @TimeLimiter(name = "credit")
     public Flux<CreditResponse> getAllCredits() {
         log.info("Fetching all Credits");
         return creditRespository.findAll()
@@ -60,6 +63,8 @@ public class CreditServiceImpl implements CreditService {
      * @return a credit response.
      */
     @Override
+    @CircuitBreaker(name = "credit", fallbackMethod = "fallbackGetCreditById")
+    @TimeLimiter(name = "credit")
     public Mono<CreditResponse> getCreditById(String idCredit) {
         log.debug("Fetching Credit with id: {}", idCredit);
         return creditRespository.findById(idCredit)
@@ -74,6 +79,8 @@ public class CreditServiceImpl implements CreditService {
      * @return a credit response.
      */
     @Override
+    @CircuitBreaker(name = "credit", fallbackMethod = "fallbackCreateCredit")
+    @TimeLimiter(name = "credit")
     public Mono<CreditResponse> createCredit(CreditRequest creditRequest) {
         if (creditRequest == null ) {
             log.warn("Invalid Credit data: {}", creditRequest);
@@ -97,6 +104,8 @@ public class CreditServiceImpl implements CreditService {
      * @return a credit response.
      */
     @Override
+    @CircuitBreaker(name = "credit", fallbackMethod = "fallbackUpdateCredit")
+    @TimeLimiter(name = "credit")
     public Mono<CreditResponse> updateCredit(String id, CreditRequest creditRequest) {
         if (creditRequest == null ) {
             log.warn("Invalid Credit data for update: {}", creditRequest);
@@ -120,6 +129,8 @@ public class CreditServiceImpl implements CreditService {
      * @return a void Mono.
      */
     @Override
+    @CircuitBreaker(name = "credit", fallbackMethod = "fallbackDeleteCredit")
+    @TimeLimiter(name = "credit")
     public Mono<Void> deleteCredit(String id) {
         log.debug("Deleting Credit with id: {}", id);
         return creditRespository.findById(id)
@@ -129,6 +140,8 @@ public class CreditServiceImpl implements CreditService {
     }
 
     @Override
+    @CircuitBreaker(name = "credit", fallbackMethod = "fallbackPayByCreditId")
+    @TimeLimiter(name = "credit")
     public Mono<PaymentResponse> payByCreditId(String id, PaymentRequest paymentRequest) {
         return creditRespository.findById(id)
                 .switchIfEmpty(Mono.error(new CreditNotFoundException("Credit not found with id: " + id)))
@@ -162,6 +175,8 @@ public class CreditServiceImpl implements CreditService {
     }
 
     @Override
+    @CircuitBreaker(name = "credit", fallbackMethod = "fallbackGetAllPaysByCreditId")
+    @TimeLimiter(name = "credit")
     public Flux<PaymentResponse> getAllPaysByCredirId(String id) {
         return creditRespository.findById(id)
                 .flatMapMany(credit -> {
@@ -171,6 +186,34 @@ public class CreditServiceImpl implements CreditService {
                     return Flux.fromIterable(paymentResponses);
                 });
     }
+
+    @Override
+    @CircuitBreaker(name = "credit", fallbackMethod = "fallbackGetBalanceByClientId")
+    @TimeLimiter(name = "credit")
+    public Flux<BalanceResponse> getBalanceByClientId(String idClient) {
+        return creditRespository.findByClientId(idClient)
+                .map(creditCard -> {
+                    if (creditCard == null) {
+                        throw new CreditNotFoundException("Credit not found with id: " + idClient);
+                    }
+                    return BalanceConverter.toBalanceResponse(Collections.singletonList(creditCard));
+                })
+                .switchIfEmpty(Mono.error(new CreditNotFoundException("Account not found with id: " + idClient)))
+                .doOnError(e -> log.error("Error getting balance for Credit ", e))
+                .onErrorMap(e -> new Exception("Error getting balance for Credit", e));
+    }
+
+    @Override
+    @CircuitBreaker(name = "credit", fallbackMethod = "fallbackGetCreditByClientId")
+    @TimeLimiter(name = "credit")
+    public Flux<CreditResponse> getCreditByClientId(String idClient) {
+        return creditRespository.findByClientId(idClient)
+                .switchIfEmpty(Mono.error(new CreditNotFoundException("Credit not found with client id: " + idClient)))
+                .map(CreditConverter::toCreditResponse)
+                .doOnError(e -> log.error("Error getting Credit for  client id ", e))
+                .onErrorMap(e -> new Exception("Error getting Credit for  client id", e));
+    }
+
     private Mono<CreditResponse> validateAndSaveAccount(Client client, Credit credit) {
         String clientType = client.getType();
         Function<Credit, Mono<CreditResponse>> validationFunction = validationStrategy.validationStrategies.get(clientType);
@@ -180,5 +223,46 @@ public class CreditServiceImpl implements CreditService {
         } else {
             return Mono.error(new CreditNotFoundException("Unknown client type"));
         }
+    }
+
+
+    public Flux<CreditResponse> fallbackGetAllCredits(Exception exception) {
+        log.error("Fallback method for getAllCredits", exception);
+        return Flux.error(new Exception("Fallback method for getAllCredits"));
+    }
+
+    public Mono<CreditResponse> fallbackGetCreditById(Exception exception) {
+        log.error("Fallback method for getCreditById", exception);
+        return Mono.error(new Exception("Fallback method for getCreditById"));
+    }
+
+    public Mono<CreditResponse> fallbackCreateCredit(Exception exception) {
+        log.error("Fallback method for createCredit", exception);
+        return Mono.error(new Exception("Fallback method for createCredit"));
+    }
+
+    public Mono<CreditResponse> fallbackUpdateCredit(Exception exception) {
+        log.error("Fallback method for updateCredit", exception);
+        return Mono.error(new Exception("Fallback method for updateCredit"));
+    }
+
+    public Mono<Void> fallbackDeleteCredit(Exception exception) {
+        log.error("Fallback method for deleteCredit", exception);
+        return Mono.error(new Exception("Fallback method for deleteCredit"));
+    }
+
+    public Flux<PaymentResponse> fallbackGetAllPaysByCreditId(Exception exception) {
+        log.error("Fallback method for getAllPaysByCreditId", exception);
+        return Flux.error(new Exception("Fallback method for getAllPaysByCreditId"));
+    }
+
+    public Flux<BalanceResponse> fallbackGetBalanceByClientId(Exception exception) {
+        log.error("Fallback method for getBalanceByClientId", exception);
+        return Flux.error(new Exception("Fallback method for getBalanceByClientId"));
+    }
+
+    public Flux<CreditResponse> fallbackGetCreditByClientId(Exception exception) {
+        log.error("Fallback method for getCreditByClientId", exception);
+        return Flux.error(new Exception("Fallback method for getCreditByClientId"));
     }
 }

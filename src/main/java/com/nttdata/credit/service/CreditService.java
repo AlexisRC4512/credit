@@ -2,6 +2,7 @@ package com.nttdata.credit.service;
 
 import com.nttdata.credit.model.request.CreditRequest;
 import com.nttdata.credit.model.request.PaymentRequest;
+import com.nttdata.credit.model.response.BalanceResponse;
 import com.nttdata.credit.model.response.CreditResponse;
 import com.nttdata.credit.model.response.PaymentResponse;
 import reactor.core.publisher.Flux;
@@ -15,4 +16,6 @@ public interface CreditService {
     Mono<Void> deleteCredit(String id);
     Mono<PaymentResponse>payByCreditId(String id , PaymentRequest paymentRequest);
     Flux<PaymentResponse>getAllPaysByCredirId(String id);
+    Flux<BalanceResponse> getBalanceByClientId(String idClient);
+    Flux<CreditResponse>getCreditByClientId(String idClient);
 }
