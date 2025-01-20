@@ -30,10 +30,10 @@
 		<java.version>11</java.version>
 		<spring-cloud.version>2021.0.6</spring-cloud.version>
 		<sonar.host.url>http://localhost:9001</sonar.host.url>
-		<sonar.token>sqp_b1cd70d95367ac8bb7823b270d9b941901337c95</sonar.token>
+		<sonar.token>sqp_08f724a067afa71c07a66e753fb3654b2b7e586e</sonar.token>
 		<sonar.projectKey>credit</sonar.projectKey>
 		<sonar.projectName>credit</sonar.projectName>
-		<sonar.exclusions>pom.xml</sonar.exclusions>
+		<sonar.exclusions>pom.xml,**/model/**</sonar.exclusions>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -223,6 +223,31 @@
 				<groupId>org.sonarsource.scanner.maven</groupId>
 				<artifactId>sonar-maven-plugin</artifactId>
 				<version>3.8.0.2131</version>
+			</plugin>
+			<plugin>
+				<groupId>org.openapitools</groupId>
+				<artifactId>openapi-generator-maven-plugin</artifactId>
+				<version>5.1.0</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<skipValidateSpec>true</skipValidateSpec>
+							<inputSpec>${project.basedir}/src/main/resources/ms-credits-api.yml</inputSpec>
+							<generatorName>spring</generatorName>
+							<apiPackage>com.nttdata.credit.api</apiPackage>
+							<modelPackage>com.nttdata.credit.model</modelPackage>
+							<supportingFilesToGenerate>ApiUtil.java</supportingFilesToGenerate>
+							<configOptions>
+								<reactive>true</reactive>
+								<delegatePattern>true</delegatePattern>
+							</configOptions>
+							<enablePostProcessFile>true</enablePostProcessFile>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>

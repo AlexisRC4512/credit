@@ -1,22 +1,23 @@
 package com.nttdata.credit.controller;
 
+import com.nttdata.credit.api.ApiApi;
 import com.nttdata.credit.model.request.CreditRequest;
 import com.nttdata.credit.model.request.PaymentRequest;
 import com.nttdata.credit.model.response.BalanceResponse;
 import com.nttdata.credit.model.response.CreditResponse;
 import com.nttdata.credit.model.response.PaymentResponse;
 import com.nttdata.credit.service.CreditService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/api/v1/credit")
-public class CreditController {
+@RequiredArgsConstructor
+public class CreditController implements ApiApi {
 
-    @Autowired
-    private CreditService creditService;
+    private final CreditService creditService;
 
     @GetMapping
     public Flux<CreditResponse> getAllCredits() {
@@ -29,8 +30,9 @@ public class CreditController {
     }
 
     @PostMapping
-    public Mono<CreditResponse> createCredit(@RequestBody CreditRequest creditRequest) {
-        return creditService.createCredit(creditRequest);
+    public Mono<CreditResponse> createCredit(@RequestBody CreditRequest creditRequest
+            , @RequestHeader("Authorization") String authorizationHeader) {
+        return creditService.createCredit(creditRequest ,authorizationHeader);
     }
 
     @PutMapping("/{id}")
