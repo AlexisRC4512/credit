@@ -6,7 +6,6 @@ info:
 servers:
   - url: http://localhost:8080
     description: Local server
-
 paths:
   /api/v1/credit:
     get:
@@ -360,7 +359,6 @@ components:
         date:
           type: string
           format: date
-
     ErrorResponse:
       type: object
       properties:

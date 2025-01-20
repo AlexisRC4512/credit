@@ -20,8 +20,8 @@ import com.nttdata.credit.util.CreditConverter;
 import com.nttdata.credit.util.PaymentConverter;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -30,18 +30,18 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import static com.nttdata.credit.util.constats.ConstantsMessage.CREDIT_NOT_FOUND;
+
 /**
  * Implementation of the credit service.
  */
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class CreditServiceImpl implements CreditService {
-    @Autowired
-    private CreditRespository creditRespository;
-    @Autowired
-    private ClientService clientService;
-    @Autowired
-    private ValidationStrategy validationStrategy;
+    private final CreditRespository creditRespository;
+    private final ClientService clientService;
+    private final ValidationStrategy validationStrategy;
     /**
      * Retrieves all credits.
      *
@@ -69,7 +69,7 @@ public class CreditServiceImpl implements CreditService {
         log.debug("Fetching Credit with id: {}", idCredit);
         return creditRespository.findById(idCredit)
                 .map(CreditConverter::toCreditResponse)
-                .switchIfEmpty(Mono.error(new CreditNotFoundException("Credit not found with id: " + idCredit)))
+                .switchIfEmpty(Mono.error(new CreditNotFoundException(CREDIT_NOT_FOUND + idCredit)))
                 .onErrorMap(e -> new Exception("Error fetching Credit by id", e));
     }
     /**
@@ -81,14 +81,14 @@ public class CreditServiceImpl implements CreditService {
     @Override
     @CircuitBreaker(name = "credit", fallbackMethod = "fallbackCreateCredit")
     @TimeLimiter(name = "credit")
-    public Mono<CreditResponse> createCredit(CreditRequest creditRequest) {
+    public Mono<CreditResponse> createCredit(CreditRequest creditRequest ,String authorizationHeader) {
         if (creditRequest == null ) {
             log.warn("Invalid Credit data: {}", creditRequest);
             return Mono.error(new InvalidCreditDataException("Invalid Credit data"));
         }
         log.info("Creating new Credit: {}", creditRequest.getType().name());
         Credit credit = CreditConverter.toCredit(creditRequest);
-        Mono<Client> clientMono = clientService.getClientById(credit.getClientId());
+        Mono<Client> clientMono = clientService.getClientById(credit.getClientId(),authorizationHeader);
         return clientMono.flatMap(client -> validateAndSaveAccount(client, credit))
                 .switchIfEmpty(Mono.error(new CreditNotFoundException("credit not found with Client id: ")))
                 .doOnError(e -> log.error("Error creating credit", e))
@@ -113,7 +113,7 @@ public class CreditServiceImpl implements CreditService {
         }
         log.debug("Updating Credit with id: {}", id);
         return creditRespository.findById(id)
-                .switchIfEmpty(Mono.error(new CreditNotFoundException("Credit not found with id: " + id)))
+                .switchIfEmpty(Mono.error(new CreditNotFoundException(CREDIT_NOT_FOUND + id)))
                 .flatMap(existingClient -> {
                     Credit updateCredit = CreditConverter.toCredit(creditRequest);
                     updateCredit.setId(existingClient.getId());
@@ -134,7 +134,7 @@ public class CreditServiceImpl implements CreditService {
     public Mono<Void> deleteCredit(String id) {
         log.debug("Deleting Credit with id: {}", id);
         return creditRespository.findById(id)
-                .switchIfEmpty(Mono.error(new CreditNotFoundException("Credit not found with id: " + id)))
+                .switchIfEmpty(Mono.error(new CreditNotFoundException(CREDIT_NOT_FOUND + id)))
                 .flatMap(existingClient -> creditRespository.delete(existingClient))
                 .onErrorMap(e -> new Exception("Error deleting Credit", e));
     }
@@ -144,7 +144,7 @@ public class CreditServiceImpl implements CreditService {
     @TimeLimiter(name = "credit")
     public Mono<PaymentResponse> payByCreditId(String id, PaymentRequest paymentRequest) {
         return creditRespository.findById(id)
-                .switchIfEmpty(Mono.error(new CreditNotFoundException("Credit not found with id: " + id)))
+                .switchIfEmpty(Mono.error(new CreditNotFoundException(CREDIT_NOT_FOUND + id)))
                 .flatMap(credit -> Mono.justOrEmpty(paymentRequest)
                         .switchIfEmpty(Mono.defer(() -> {
                             log.warn("Invalid Payment data: {}", paymentRequest);
@@ -194,7 +194,7 @@ public class CreditServiceImpl implements CreditService {
         return creditRespository.findByClientId(idClient)
                 .map(creditCard -> {
                     if (creditCard == null) {
-                        throw new CreditNotFoundException("Credit not found with id: " + idClient);
+                        throw new CreditNotFoundException(CREDIT_NOT_FOUND + idClient);
                     }
                     return BalanceConverter.toBalanceResponse(Collections.singletonList(creditCard));
                 })

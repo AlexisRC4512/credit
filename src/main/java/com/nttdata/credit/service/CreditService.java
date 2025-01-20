@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono;
 public interface CreditService {
     Flux<CreditResponse>getAllCredits();
     Mono<CreditResponse>getCreditById(String idCredit);
-    Mono<CreditResponse> createCredit(CreditRequest creditRequest);
+    Mono<CreditResponse> createCredit(CreditRequest creditRequest, String authorizationHeader);
     Mono<CreditResponse> updateCredit(String id, CreditRequest creditRequest);
     Mono<Void> deleteCredit(String id);
     Mono<PaymentResponse>payByCreditId(String id , PaymentRequest paymentRequest);
