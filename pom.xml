@@ -240,9 +240,10 @@
 							<apiPackage>com.nttdata.credit.api</apiPackage>
 							<modelPackage>com.nttdata.credit.model</modelPackage>
 							<supportingFilesToGenerate>ApiUtil.java</supportingFilesToGenerate>
-							<configOptions>
-								<reactive>true</reactive>
-								<delegatePattern>true</delegatePattern>
+								<configOptions>
+									<reactive>true</reactive>
+									<interfaceOnly>true</interfaceOnly>
+									<reactive>true</reactive>
 							</configOptions>
 							<enablePostProcessFile>true</enablePostProcessFile>
 						</configuration>

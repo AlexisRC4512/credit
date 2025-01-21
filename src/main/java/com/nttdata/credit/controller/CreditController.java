@@ -1,6 +1,5 @@
 package com.nttdata.credit.controller;
 
-import com.nttdata.credit.api.ApiApi;
 import com.nttdata.credit.model.request.CreditRequest;
 import com.nttdata.credit.model.request.PaymentRequest;
 import com.nttdata.credit.model.response.BalanceResponse;
@@ -15,7 +14,7 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequestMapping("/api/v1/credit")
 @RequiredArgsConstructor
-public class CreditController implements ApiApi {
+public class CreditController  {
 
     private final CreditService creditService;
 
