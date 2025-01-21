@@ -49,7 +49,7 @@ public class CreditController  {
         return creditService.getBalanceByClientId(idClient);
     }
     @PostMapping("/{id}/payment")
-    public Mono<PaymentResponse> createPayment(@PathVariable String id,@RequestBody PaymentRequest paymentRequest) {
+    public Mono<PaymentResponse> createPayment(@PathVariable("id") String id,@RequestBody PaymentRequest paymentRequest) {
         return creditService.payByCreditId(id,paymentRequest);
     }
     @GetMapping("/{id}/payments")
